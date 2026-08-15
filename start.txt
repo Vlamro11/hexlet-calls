@@ -1,0 +1,47 @@
+import "@typespec/http";
+
+using TypeSpec.Http;
+
+@service({
+  title: "Сервис Календарь звонков",
+  version: "1.0.0"
+})
+namespace CallCalendar;
+
+model Call {
+  @visibility("read")
+  id: string;
+
+  title: string;
+  description?: string;
+  startTime: utcDateTime;
+  endTime: utcDateTime;
+  participants: string[];
+  status: CallStatus;
+}
+
+enum CallStatus {
+  scheduled,
+  cancelled,
+  completed,
+}
+
+@route("/calls")
+interface Calls {
+  @get list(): Call[] | Error;
+  @post create(@body body: Omit<Call, "id">): Call | Error;
+
+  @route("{id}")
+  @get get(@path id: string): Call | Error;
+
+  @route("{id}")
+  @put update(@path id: string, @body body: Partial<Call>): Call | Error;
+
+  @route("{id}")
+  @delete delete(@path id: string): void | Error;
+}
+
+model Error {
+  code: int32;
+  message: string;
+}
